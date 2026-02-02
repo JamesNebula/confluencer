@@ -155,3 +155,33 @@ class TradeHistory(db.Model):
     def __repr__(self):
         """String representation for debugging."""
         return f'<Trade {self.direction} {self.currency_pair} @ {self.entry_price}>'
+
+class AnalysisSession(db.Model):
+    """
+    Store user's technical analysis sessions for confluence scoring.
+    
+    Tracks all factors considered and the resulting recommendation.
+    """
+    __tablename__ = 'analysis_sessions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    
+    # Analysis parameters
+    currency_pair = db.Column(db.String(10), nullable=False, index=True)
+    timeframe = db.Column(db.String(5), nullable=False)  # '4H', 'D', 'W'
+    
+    # Confluence factors (stored as JSON for flexibility)
+    confluence_data = db.Column(db.Text)  # JSON string of all factors and their values
+    
+    # Results
+    recommendation = db.Column(db.String(10))  # 'BUY', 'SELL', 'HOLD', 'NEUTRAL'
+    confidence_score = db.Column(db.Float)  # 0-100%
+    
+    # Metadata
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    def __repr__(self):
+        """String representation for debugging."""
+        return f'<Analysis {self.currency_pair} {self.timeframe} - {self.recommendation}>'
+

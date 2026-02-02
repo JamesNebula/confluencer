@@ -68,10 +68,10 @@ def create_app(config_name='development'):
         """
         return User.query.get(int(user_id))
     
-    # Register blueprints
-    from app.routes import auth_bp, dashboard_bp
+    from app.routes import auth_bp, dashboard_bp, confluence_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(confluence_bp)
     
     # Create database tables if they don't exist
     with app.app_context():

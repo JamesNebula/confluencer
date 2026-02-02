@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="mb-0">Analysis History</h1>
+        <p class="text-muted mb-0">Your previous confluence analyses</p>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('analysis.confluence') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Analysis
+        </a>
+    </div>
+</div>
+
+{% if analyses.items %}
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Pair</th>
+                        <th>Timeframe</th>
+                        <th>Recommendation</th>
+                        <th>Confidence</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for analysis in analyses.items %}
+                    <tr>
+                        <td>{{ analysis.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td><strong>{{ analysis.currency_pair }}</strong></td>
+                        <td>{{ analysis.timeframe }}</td>
+                        <td>
+                            <span class="badge bg-{% if analysis.recommendation == 'BUY' %}success{% elif analysis.recommendation == 'SELL' %}danger{% else %}warning{% endif %}">
+                                {{ analysis.recommendation }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if analysis.confidence_score >= 70 %}success{% elif analysis.confidence_score >= 50 %}info{% else %}secondary{% endif %}">
+                                {{ analysis.confidence_score|round(1) }}%
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('analysis.confluence') }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-redo"></i> Re-analyze
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if analyses.pages > 1 %}
+        <nav aria-label="Analysis history pagination">
+            <ul class="pagination justify-content-center">
+                {% if analyses.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('analysis.analysis_history', page=analyses.prev_num) }}">Previous</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+                {% endif %}
+                
+                {% for page_num in analyses.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == analyses.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('analysis.analysis_history', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if analyses.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('analysis.analysis_history', page=analyses.next_num) }}">Next</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="fas fa-history fa-3x text-muted mb-3"></i>
+        <h5 class="mb-3">No Analysis History</h5>
+        <p class="text-muted mb-4">
+            You haven't performed any confluence analyses yet.
+        </p>
+        <a href="{{ url_for('analysis.confluence') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Start Your First Analysis
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

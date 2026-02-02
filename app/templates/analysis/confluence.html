@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1 class="mb-4">
+            <i class="fas fa-project-diagram"></i> Confluence Analysis
+        </h1>
+        <p class="text-muted">
+            Combine multiple technical factors to get a weighted trading recommendation
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <!-- Analysis Form -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-edit"></i> Analysis Parameters</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('analysis.confluence') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.currency_pair.label.text }}</label>
+                        {{ form.currency_pair(class="form-select") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.timeframe.label.text }}</label>
+                        {{ form.timeframe(class="form-select") }}
+                        <small class="form-text text-muted">{{ form.timeframe.description }}</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.timeframe_direction.label.text }}</label>
+                        {{ form.timeframe_direction(class="form-select") }}
+                        <small class="form-text text-muted">{{ form.timeframe_direction.description }}</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.pattern.label.text }}</label>
+                        {{ form.pattern(class="form-select") }}
+                        <small class="form-text text-muted">{{ form.pattern.description }}</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.support_resistance.label.text }}</label>
+                        {{ form.support_resistance(class="form-select") }}
+                        <small class="form-text text-muted">{{ form.support_resistance.description }}</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.ema_status.label.text }}</label>
+                        {{ form.ema_status(class="form-select") }}
+                        <small class="form-text text-muted">{{ form.ema_status.description }}</small>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.volume_confirmation(class="form-check-input") }}
+                        {{ form.volume_confirmation.label(class="form-check-label") }}
+                        <small class="form-text text-muted d-block">{{ form.volume_confirmation.description }}</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.notes.label.text }}</label>
+                        {{ form.notes(class="form-control", rows=3) }}
+                        <small class="form-text text-muted">{{ form.notes.description }}</small>
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <!-- Results Display -->
+        {% if result %}
+        <div class="card mb-4">
+            <div class="card-header bg-{{ result.recommendation == 'BUY' and 'success' or result.recommendation == 'SELL' and 'danger' or 'warning' }} text-white">
+                <h5 class="mb-0">
+                    <i class="fas {{ result.recommendation == 'BUY' and 'fa-arrow-up' or result.recommendation == 'SELL' and 'fa-arrow-down' or 'fa-minus' }}"></i>
+                    {{ result.recommendation_text }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h1 class="display-1 fw-bold text-{{ result.recommendation == 'BUY' and 'success' or result.recommendation == 'SELL' and 'danger' or 'warning' }}">
+                        {{ result.confidence_percentage }}%
+                    </h1>
+                    <p class="lead mb-0">{{ result.strength }} Confluence Signal</p>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>Summary:</strong> {{ result.summary }}
+                </div>
+                
+                <h6 class="mb-3">Factor Breakdown:</h6>
+                <div class="list-group">
+                    {% for factor_name, factor_data in result.factors.items() %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ factor_name.replace('_', ' ').title() }}</strong>
+                            <br>
+                            <small class="text-muted">{{ factor_data.explanation }}</small>
+                        </div>
+                        <span class="badge bg-{% if factor_data.raw_score > 0.7 %}success{% elif factor_data.raw_score < 0.3 %}danger{% else %}secondary{% endif %}">
+                            {{ (factor_data.raw_score * 100)|round(0) }}%
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-3">
+                    <a href="{{ url_for('analysis.analysis_history') }}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-history"></i> View History
+                    </a>
+                    <button onclick="window.location.reload()" class="btn btn-outline-primary">
+                        <i class="fas fa-redo"></i> New Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card mb-4">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                <h5 class="mb-3">No Analysis Yet</h5>
+                <p class="text-muted mb-4">
+                    Fill out the form on the left to analyze confluence factors
+                    and get a weighted trading recommendation.
+                </p>
+                <div class="alert alert-info">
+                    <strong>Tip:</strong> Higher confidence scores (70%+) indicate stronger setups
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- How It Works Card -->
+<div class="card">
+    <div class="card-header bg-light">
+        <h6 class="mb-0"><i class="fas fa-info-circle"></i> How Confluence Scoring Works</h6>
+    </div>
+    <div class="card-body">
+        <p class="mb-3">
+            This analysis combines <strong>5 key technical factors</strong> with weighted importance:
+        </p>
+        <ul class="mb-0">
+            <li><strong>Timeframe Alignment (30%)</strong> - Trading with the trend</li>
+            <li><strong>Pattern Confirmation (25%)</strong> - Chart patterns like Head & Shoulders</li>
+            <li><strong>Support/Resistance (20%)</strong> - Key price levels</li>
+            <li><strong>EMA Alignment (15%)</strong> - Trend confirmation</li>
+            <li><strong>Volume Confirmation (10%)</strong> - Adds confidence to the setup</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
