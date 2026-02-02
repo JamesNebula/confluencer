@@ -1,0 +1,23 @@
+# Web Framework
+Flask==3.0.0
+
+# Database
+Flask-SQLAlchemy==3.1.1
+
+# Authentication
+Flask-Login==0.6.3
+
+# Forms & Security
+Flask-WTF==1.2.1
+
+# Database Migrations
+Flask-Migrate==4.0.5
+
+# Security
+bcrypt==4.1.2
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Development
+gunicorn==21.2.0
