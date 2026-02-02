@@ -1,69 +1,97 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, UserMixin
 from flask_wtf.csrf import CSRFProtect
-from config import config
+from config import get_config
 import os
 
-# initialize extensions WITHOUT app instance
+# Initialize extensions WITHOUT app instance (deferred initialization)
 db = SQLAlchemy()
 login_manager = LoginManager()
 csrf = CSRFProtect()
 
-def create_app(config_name='default'):
+
+def create_app(config_name='development'):
     """
     Application factory function.
-    - creates and configures a flask app instance with the given configuration
-    - Args:
-        config_name (str): configuration name ('development', 'testing', 'production')
-    - Returns:
-        Flask: configured Flask application instance
+    
+    Creates and configures a Flask app instance with the given configuration.
+    
+    Args:
+        config_name (str): Configuration name ('development', 'testing', 'production')
+    
+    Returns:
+        Flask: Configured Flask application instance
     """
-    # Create flask app instance
+    # Create Flask app instance
     app = Flask(__name__, instance_relative_config=True)
-
-    # load config from config.py
-    app.config.from_object(config[config_name])
-
-    # Ensure instance folder exists (for SQlite database file)
+    
+    # Ensure instance folder exists FIRST (before config needs it)
     try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass # folder already exists
-
-    # inititalise extensions with app instance
+        os.makedirs(app.instance_path, exist_ok=True)
+        print(f"✅ Instance folder: {app.instance_path}")
+    except OSError as e:
+        print(f"⚠️  Could not create instance folder: {e}")
+        raise
+    
+    # Get configuration instance with instance path
+    config_obj = get_config(config_name, app.instance_path)
+    
+    # Load configuration from config object
+    app.config.from_object(config_obj)
+    
+    # Initialize extensions with app instance
     db.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
-
-    # Configure flask-login
-    login_manager.login_view = 'auth.login' # where to redirect if login required
+    
+    # Configure Flask-Login
+    login_manager.login_view = 'auth.login'  # Where to redirect if login required
     login_manager.login_message = 'Please log in to access this page.'
-    login_manager.login_message_category = 'info' # bootstrap alert class
-
-    # Register blueprints (modular route handlers)
-    # These will be created in future steps
-    from app.routes import auth, dashboard
-    app.register_blueprint(auth.auth_bp)
-    app.register_blueprint(dashboard.dashboard_bp)
-
+    login_manager.login_message_category = 'info'  # Bootstrap alert class
+    
+    # Tell Flask-Login how to load users from the database
+    from app.models import User
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        """
+        Flask-Login callback to load user from database.
+        
+        This is REQUIRED for Flask-Login to work.
+        
+        Args:
+            user_id (str): User ID as string (from session)
+            
+        Returns:
+            User or None: User object if found, None otherwise
+        """
+        return User.query.get(int(user_id))
+    
+    # Register blueprints
+    from app.routes import auth_bp, dashboard_bp
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(dashboard_bp)
+    
     # Create database tables if they don't exist
     with app.app_context():
+        print("🔄 Creating database tables...")
         db.create_all()
-
+        print("✅ Database tables created!")
+    
     # Register error handlers
     register_error_handlers(app)
-
+    
     return app
+
 
 def register_error_handlers(app):
     """
-    register custom error handlers for the application.
-    provides user-friendly error pages instead of default flask errors
+    Register custom error handlers for the application.
     """
     @app.errorhandler(404)
     def not_found_error(error):
-        # handle 404 not found errors
+        """Handle 404 Not Found errors"""
         return {
             'error': 'Page not found',
             'message': 'The page you requested does not exist.'
@@ -71,11 +99,9 @@ def register_error_handlers(app):
     
     @app.errorhandler(500)
     def internal_error(error):
-        # handle 500 internal server error
-        # rollback database session on error to prevent stale connections
+        """Handle 500 Internal Server Error"""
         db.session.rollback()
         return {
             'error': 'Internal server error',
             'message': 'Something went wrong on our end. Please try again later.'
         }, 500
-    

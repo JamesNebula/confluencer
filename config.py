@@ -1,68 +1,95 @@
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from a .env file
+# Load environment variables from .env file
 load_dotenv()
 
 class Config:
     """
-    Base config class with settings common to all environments.
+    Base configuration class with settings common to all environments.
     """
-    # Secret key for session management and CSRF protection
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-prod'
-
-    # Database config
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///instance/forex_app.db'
+    # Secret key for sessions, CSRF protection
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
-    # Disable track modifications 
+    # Disable track modifications to suppress warning
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
+    
     # Record queries for debugging
     SQLALCHEMY_RECORD_QUERIES = True
+    
+    # Database will be set in subclass __init__
 
 class DevelopmentConfig(Config):
     """
-    Dev config with debug features enabled
+    Development configuration with debug features enabled.
     """
     DEBUG = True
-    # Echo SQL queries to console for debugging
-    SQLALCHEMY_ECHO = False # set to true to see all SQL queries
+    SQLALCHEMY_ECHO = False
+    
+    def __init__(self, instance_path=None):
+        """Initialize development config with database path"""
+        if instance_path:
+            # Use absolute path for SQLite database
+            database_path = os.path.join(instance_path, 'forex_app.db')
+            # Note: 4 slashes for absolute path on Unix: sqlite:////absolute/path
+            self.SQLALCHEMY_DATABASE_URI = f'sqlite:///{database_path}'
+            print(f"✅ Database URI: {self.SQLALCHEMY_DATABASE_URI}")
+            print(f"✅ Database file: {database_path}")
+        else:
+            # Fallback to relative path
+            self.SQLALCHEMY_DATABASE_URI = 'sqlite:///instance/forex_app.db'
 
 class TestingConfig(Config):
     """
-    Testing config with isolated database
+    Testing configuration with isolated database.
     """
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///instance/test.db'
-    # Disable csrf for easier testing
-    WTF_CSRF_ENABLED = False
+    
+    def __init__(self, instance_path=None):
+        """Initialize testing config"""
+        if instance_path:
+            test_db_path = os.path.join(instance_path, 'test.db')
+            self.SQLALCHEMY_DATABASE_URI = f'sqlite:///{test_db_path}'
+        else:
+            self.SQLALCHEMY_DATABASE_URI = 'sqlite:///instance/test.db'
 
 class ProductionConfig(Config):
     """
-    Production config with security hardening
+    Production configuration with security hardening.
     """
     DEBUG = False
-    # security enhancements
-    SESSION_COOKIE_SECURE = True # only send cookies over https
-    SESSION_COOKIE_HTTPONLY = True # prevent javascript access to cookies
-    SESSION_COOKIE_SAMESITE = 'Lax' # CSRF protection
-
-    # in production we expect database_url to be set externally
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-
-    # Validate required production settings
-    @classmethod
-    def init_app(cls, app):
-        if not app.config.get('SECRET_KEY') or 'dev-secret' in app.config.get('SECRET_KEY', ''):
-            raise ValueError('SECRET_KEY must be set and secure in production!')
-        if not app.config.get('DATABASE_URL'):
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    
+    def __init__(self):
+        """Initialize production config"""
+        database_url = os.environ.get('DATABASE_URL')
+        if not database_url:
             raise ValueError('DATABASE_URL must be set in production!')
+        self.SQLALCHEMY_DATABASE_URI = database_url
         
-# Configuration dictionary for easy selection
-config = {
-    'development': DevelopmentConfig,
-    'testing': TestingConfig,
-    'production': ProductionConfig,
-    'default': DevelopmentConfig
-}
+        secret_key = os.environ.get('SECRET_KEY')
+        if not secret_key or 'dev-secret' in secret_key:
+            raise ValueError('SECRET_KEY must be set and secure in production!')
+
+# Factory function to get config instance
+def get_config(config_name='development', instance_path=None):
+    """
+    Get configuration instance with proper initialization.
+    
+    Args:
+        config_name: 'development', 'testing', or 'production'
+        instance_path: Path to instance folder (for SQLite databases)
+    
+    Returns:
+        Config instance
+    """
+    if config_name == 'development':
+        return DevelopmentConfig(instance_path)
+    elif config_name == 'testing':
+        return TestingConfig(instance_path)
+    elif config_name == 'production':
+        return ProductionConfig()
+    else:
+        return DevelopmentConfig(instance_path)
