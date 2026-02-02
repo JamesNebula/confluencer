@@ -140,3 +140,25 @@ class ConfluenceAnalysisForm(FlaskForm):
                          description='Optional: Your reasoning or additional observations')
     
     submit = SubmitField('Analyze Confluence')
+
+class PredictionForm(FlaskForm):
+    """
+    Form for requesting market predictions.
+    """
+    currency_pair = SelectField('Currency Pair', choices=[
+        ('EURUSD', 'EUR/USD'),
+        ('GBPUSD', 'GBP/USD'),
+        ('USDJPY', 'USD/JPY'),
+        ('AUDUSD', 'AUD/USD'),
+        ('USDCAD', 'USD/CAD'),
+    ], validators=[DataRequired()], description='Select currency pair for prediction')
+    
+    prediction_type = SelectField('Prediction Type', choices=[
+        ('daily', 'Daily Trend'),
+        ('weekly', 'Weekly Trend'),
+    ], validators=[DataRequired()], description='Timeframe for prediction')
+    
+    train_model = BooleanField('Retrain Model', 
+                              description='Check to retrain model on latest 4 years of data (takes ~30 seconds)')
+    
+    submit = SubmitField('Get Prediction')
