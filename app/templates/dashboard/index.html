@@ -1,25 +1,185 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header bg-success text-white">
-                <h3 class="mb-0">Dashboard</h3>
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1 class="mb-4">Dashboard</h1>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-chart-line"></i> Total Trades</h5>
+                <h2 class="card-text display-4">{{ total_trades }}</h2>
+                <p class="card-text mb-0">Open: {{ open_trades_count }}</p>
             </div>
-            <div class="card-body text-center">
-                <h1 class="display-4 mb-4">✅ Step 4 Complete!</h1>
-                <p class="lead">Application factory pattern working correctly</p>
-                <div class="mt-4 p-3 bg-light rounded">
-                    <p><strong>Next steps:</strong></p>
-                    <ul class="text-start">
-                        <li>Step 5: User authentication models</li>
-                        <li>Step 6: Full login/register system</li>
-                        <li>Step 7: Trade tracking features</li>
-                    </ul>
-                </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-percentage"></i> Win Rate</h5>
+                <h2 class="card-text display-4">{{ win_rate }}%</h2>
+                <p class="card-text mb-0">{{ winning_trades_count }} wins / {{ losing_trades_count }} losses</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card {% if total_pnl > 0 %}bg-success{% elif total_pnl < 0 %}bg-danger{% else %}bg-secondary{% endif %} text-white h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-dollar-sign"></i> Total P/L</h5>
+                <h2 class="card-text display-4">
+                    {% if total_pnl > 0 %}+{% elif total_pnl < 0 %}{% endif %}${{ total_pnl|round(2) }}
+                </h2>
+                <p class="card-text mb-0">{{ total_pnl_pct }}% of account</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-calculator"></i> Profit Factor</h5>
+                <h2 class="card-text display-4">{{ profit_factor }}</h2>
+                <p class="card-text mb-0">Avg Win: ${% if avg_win > 0 %}+{% endif %}{{ avg_win|round(2) }}</p>
+                <p class="card-text mb-0">Avg Loss: ${% if avg_loss < 0 %}{% endif %}{{ avg_loss|round(2) }}</p>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Recent Trades Table -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Recent Trades</h5>
+                <a href="{{ url_for('dashboard.add_trade') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Add Trade
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_trades %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Pair</th>
+                                <th>Direction</th>
+                                <th>Entry</th>
+                                <th>Exit</th>
+                                <th>P/L</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trade in recent_trades %}
+                            <tr>
+                                <td>{{ trade.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td><strong>{{ trade.currency_pair }}</strong></td>
+                                <td>
+                                    <span class="badge {% if trade.direction == 'BUY' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ trade.direction }}
+                                    </span>
+                                </td>
+                                <td>{{ trade.entry_price|round(5) }}</td>
+                                <td>
+                                    {% if trade.exit_price %}
+                                        {{ trade.exit_price|round(5) }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if trade.pnl is not none %}
+                                        <span class="{% if trade.pnl > 0 %}text-success{% elif trade.pnl < 0 %}text-danger{% endif %}">
+                                            {% if trade.pnl > 0 %}+{% endif %}${{ trade.pnl|round(2) }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if trade.status == 'OPEN' %}bg-warning{% elif trade.status == 'CLOSED' %}bg-secondary{% endif %}">
+                                        {{ trade.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if trade.status == 'OPEN' %}
+                                    <button class="btn btn-sm btn-outline-primary close-trade-btn" 
+                                            data-trade-id="{{ trade.id }}"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#closeTradeModal">
+                                        Close
+                                    </button>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No trades yet. Start by adding your first trade!</p>
+                    <a href="{{ url_for('dashboard.add_trade') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Your First Trade
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Close Trade Modal -->
+<div class="modal fade" id="closeTradeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="closeTradeForm" method="POST">
+                <!-- Add CSRF token -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="modal-header">
+                    <h5 class="modal-title">Close Trade</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Exit Price</label>
+                        <input type="number" step="0.00001" class="form-control" name="exit_price" required>
+                        <small class="text-muted">Enter the price at which you closed the trade</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Close Trade</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Handle close trade button click
+document.querySelectorAll('.close-trade-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const tradeId = this.getAttribute('data-trade-id');
+        const form = document.getElementById('closeTradeForm');
+        form.action = `/close-trade/${tradeId}`;
+    });
+});
+</script>
+{% endblock %}
 {% endblock %}

@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="mb-0">Trade History</h1>
+        <p class="text-muted mb-0">View all your trades</p>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('dashboard.add_trade') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Trade
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if trades.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Pair</th>
+                        <th>Direction</th>
+                        <th>Entry</th>
+                        <th>Exit</th>
+                        <th>Size</th>
+                        <th>P/L</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trade in trades.items %}
+                    <tr>
+                        <td>{{ trade.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td><strong>{{ trade.currency_pair }}</strong></td>
+                        <td>
+                            <span class="badge {% if trade.direction == 'BUY' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ trade.direction }}
+                            </span>
+                        </td>
+                        <td>{{ trade.entry_price|round(5) }}</td>
+                        <td>
+                            {% if trade.exit_price %}
+                                {{ trade.exit_price|round(5) }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ trade.position_size }} lots</td>
+                        <td>
+                            {% if trade.pnl is not none %}
+                                <span class="{% if trade.pnl > 0 %}text-success{% elif trade.pnl < 0 %}text-danger{% endif %}">
+                                    {% if trade.pnl > 0 %}+{% endif %}${{ trade.pnl|round(2) }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge {% if trade.status == 'OPEN' %}bg-warning{% elif trade.status == 'CLOSED' %}bg-secondary{% endif %}">
+                                {{ trade.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if trade.status == 'OPEN' %}
+                            <form method="POST" action="{{ url_for('dashboard.close_trade', trade_id=trade.id) }}" class="d-inline">
+                                <button type="button" class="btn btn-sm btn-outline-primary close-trade-btn"
+                                        data-bs-toggle="modal" data-bs-target="#closeTradeModal"
+                                        data-trade-id="{{ trade.id }}">
+                                    Close
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if trades.pages > 1 %}
+        <nav aria-label="Trade history pagination">
+            <ul class="pagination justify-content-center">
+                {% if trades.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('dashboard.trade_history', page=trades.prev_num) }}">Previous</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+                {% endif %}
+                
+                {% for page_num in trades.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == trades.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('dashboard.trade_history', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if trades.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('dashboard.trade_history', page=trades.next_num) }}">Next</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-history fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No trades found.</p>
+            <a href="{{ url_for('dashboard.add_trade') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Your First Trade
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Close Trade Modal -->
+<div class="modal fade" id="closeTradeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="closeTradeForm" method="POST">
+                <!-- Add CSRF token -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="modal-header">
+                    <h5 class="modal-title">Close Trade</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Exit Price</label>
+                        <input type="number" step="0.00001" class="form-control" name="exit_price" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Close Trade</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Handle close trade button click
+document.querySelectorAll('.close-trade-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const tradeId = this.getAttribute('data-trade-id');
+        const form = document.getElementById('closeTradeForm');
+        form.action = `/close-trade/${tradeId}`;
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

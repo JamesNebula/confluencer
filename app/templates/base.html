@@ -45,10 +45,14 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Find the navbar section and update it -->
                 <ul class="navbar-nav me-auto">
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('dashboard.index') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard.trade_history') }}">Trade History</a>
                     </li>
                     {% endif %}
                 </ul>
