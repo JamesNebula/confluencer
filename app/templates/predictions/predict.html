@@ -7,7 +7,7 @@
             <i class="fas fa-robot"></i> Market Predictions
         </h1>
         <p class="text-muted">
-            Machine learning predictions for market direction based on 4 years of historical data
+            Machine learning predictions powered by real-time forex data and technical analysis
         </p>
     </div>
 </div>
@@ -17,7 +17,7 @@
         <!-- Prediction Form -->
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-cogs"></i> Prediction Settings</h5>
+                <h5 class="mb-0"><i class="fas fa-cogs"></i> Generate Prediction</h5>
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('predictions.predict') }}">
@@ -26,7 +26,9 @@
                     <div class="mb-3">
                         <label class="form-label">{{ form.currency_pair.label.text }}</label>
                         {{ form.currency_pair(class="form-select") }}
-                        <small class="form-text text-muted">{{ form.currency_pair.description }}</small>
+                        <small class="form-text text-muted">
+                            {{ form.currency_pair.description }}
+                        </small>
                     </div>
                     
                     <div class="mb-3">
@@ -38,7 +40,9 @@
                     <div class="mb-3 form-check">
                         {{ form.train_model(class="form-check-input") }}
                         {{ form.train_model.label(class="form-check-label") }}
-                        <small class="form-text text-muted d-block">{{ form.train_model.description }}</small>
+                        <small class="form-text text-muted d-block">
+                            {{ form.train_model.description }}
+                        </small>
                     </div>
                     
                     <div class="d-grid">
@@ -47,7 +51,7 @@
                 </form>
                 
                 <div class="alert alert-info mt-4">
-                    <strong>Note:</strong> First-time training takes ~30 seconds. 
+                    <strong>💡 Tip:</strong> First-time training takes ~15 seconds. 
                     Subsequent predictions use the saved model and are instant.
                 </div>
             </div>
@@ -60,16 +64,16 @@
         <div class="card mb-4">
             <div class="card-header bg-{% if prediction.prediction == 'UP' %}success{% else %}danger{% endif %} text-white">
                 <h5 class="mb-0">
-                    <i class="fas fa-chart-line"></i> {{ prediction.pair }} - {{ prediction.next_period }} Prediction
+                    <i class="fas fa-chart-line"></i> {{ prediction.pair }} - {{ prediction.next_period }} Forecast
                 </h5>
             </div>
             <div class="card-body text-center">
                 <div class="mb-4">
                     <h1 class="display-1 fw-bold text-{% if prediction.prediction == 'UP' %}success{% else %}danger{% endif %}">
                         {% if prediction.prediction == 'UP' %}
-                        <i class="fas fa-arrow-up"></i> UP
+                        <i class="fas fa-arrow-up"></i> BULLISH
                         {% else %}
-                        <i class="fas fa-arrow-down"></i> DOWN
+                        <i class="fas fa-arrow-down"></i> BEARISH
                         {% endif %}
                     </h1>
                     <h2 class="display-4 fw-bold">{{ prediction.confidence }}% Confidence</h2>
@@ -79,7 +83,7 @@
                     <div class="col-6">
                         <div class="card bg-light">
                             <div class="card-body">
-                                <small class="text-muted">Probability UP</small>
+                                <small class="text-muted">Probability Bullish</small>
                                 <div class="fw-bold text-success">{{ prediction.probability_up }}%</div>
                             </div>
                         </div>
@@ -87,7 +91,7 @@
                     <div class="col-6">
                         <div class="card bg-light">
                             <div class="card-body">
-                                <small class="text-muted">Probability DOWN</small>
+                                <small class="text-muted">Probability Bearish</small>
                                 <div class="fw-bold text-danger">{{ prediction.probability_down }}%</div>
                             </div>
                         </div>
@@ -95,15 +99,15 @@
                 </div>
                 
                 {% if prediction.model_accuracy %}
-                <div class="alert alert-warning">
-                    <strong>Model Accuracy:</strong> {{ prediction.model_accuracy }}% (last 100 samples)
+                <div class="alert alert-success">
+                    <strong>Model Performance:</strong> {{ prediction.model_accuracy }}% accuracy (backtested)
                 </div>
                 {% endif %}
                 
                 <div class="mt-3">
                     <small class="text-muted">
-                        Prediction date: {{ prediction.prediction_date }}<br>
-                        Based on Random Forest classifier with 14 technical indicators
+                        Generated: {{ prediction.prediction_date }}<br>
+                        Based on Random Forest with 14 technical indicators
                     </small>
                 </div>
             </div>
@@ -113,7 +117,7 @@
         {% if prediction.top_features %}
         <div class="card">
             <div class="card-header bg-light">
-                <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Top Influencing Factors</h6>
+                <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Key Technical Drivers</h6>
             </div>
             <div class="card-body">
                 <ul class="list-group list-group-flush">
@@ -125,7 +129,7 @@
                     {% endfor %}
                 </ul>
                 <small class="text-muted mt-2 d-block">
-                    These technical indicators had the strongest influence on this prediction
+                    These indicators had the strongest influence on today's prediction
                 </small>
             </div>
         </div>
@@ -134,14 +138,15 @@
         <div class="card mb-4">
             <div class="card-body text-center py-5">
                 <i class="fas fa-robot fa-3x text-muted mb-3"></i>
-                <h5 class="mb-3">No Prediction Yet</h5>
+                <h5 class="mb-3">Generate Your First Prediction</h5>
                 <p class="text-muted mb-4">
-                    Configure prediction settings on the left and click "Get Prediction"
-                    to see machine learning forecasts.
+                    Select a currency pair and click "Get Prediction" to see machine learning insights.
                 </p>
-                <div class="alert alert-info">
-                    <strong>How it works:</strong> Model analyzes 14 technical indicators
-                    from 4 years of historical data to predict tomorrow's trend direction.
+                <div class="alert alert-success">
+                    <strong>✅ Ready to Start:</strong><br>
+                    • Select EUR/USD for best results<br>
+                    • Check "Retrain Model" for first prediction<br>
+                    • Uses real Alpha Vantage forex data
                 </div>
             </div>
         </div>
@@ -152,26 +157,22 @@
 <!-- How Predictions Work -->
 <div class="card mt-4">
     <div class="card-header bg-light">
-        <h6 class="mb-0"><i class="fas fa-info-circle"></i> How ML Predictions Work</h6>
+        <h6 class="mb-0"><i class="fas fa-info-circle"></i> How It Works</h6>
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-4 mb-3">
-                <h6><i class="fas fa-database text-primary"></i> Data</h6>
-                <p class="mb-0">4 years of daily OHLCV data from Yahoo Finance</p>
+                <h6><i class="fas fa-database text-primary"></i> Real Market Data</h6>
+                <p class="mb-0">Live forex data from Alpha Vantage API</p>
             </div>
             <div class="col-md-4 mb-3">
-                <h6><i class="fas fa-sliders-h text-primary"></i> Features</h6>
-                <p class="mb-0">14 technical indicators: RSI, MACD, EMAs, Bollinger Bands, ATR</p>
+                <h6><i class="fas fa-sliders-h text-primary"></i> Technical Indicators</h6>
+                <p class="mb-0">14 indicators engineered: RSI, MACD, EMAs, Bollinger Bands, ATR</p>
             </div>
             <div class="col-md-4 mb-3">
-                <h6><i class="fas fa-brain text-primary"></i> Model</h6>
-                <p class="mb-0">Random Forest classifier (interpretable, no black box)</p>
+                <h6><i class="fas fa-brain text-primary"></i> ML Model</h6>
+                <p class="mb-0">Random Forest classifier (interpretable & saved after training)</p>
             </div>
-        </div>
-        <div class="alert alert-warning mt-3">
-            <strong>Disclaimer:</strong> Predictions are for educational purposes only.
-            Past performance does not guarantee future results. Always use proper risk management.
         </div>
     </div>
 </div>

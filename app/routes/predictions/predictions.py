@@ -1,7 +1,7 @@
 """
 Prediction routes for ML-based market direction forecasting.
 """
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app.forms import PredictionForm
 from app.ml.prediction_model import ForexPredictor
@@ -24,8 +24,8 @@ def predict():
     form = PredictionForm()
     
     # Initialize predictor (will load saved model if exists)
-    model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
-                             'instance', 'ml_model.pkl')
+    instance_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'instance')
+    model_path = os.path.join(instance_dir, 'ml_model.pkl')
     predictor = ForexPredictor(model_path=model_path)
     
     prediction_result = None
@@ -39,17 +39,22 @@ def predict():
         try:
             # Retrain model if requested
             if retrain:
-                flash('Training model on 4 years of historical data...', 'info')
-                training_result = predictor.train(pair=pair, period='4y')
-                flash(f"Model trained! Test accuracy: {training_result['test_accuracy']}%", 'success')
+                flash('Training model on 2 years of historical data...', 'info')
+                # FIXED: Changed from period='4y' to years=2
+                training_result = predictor.train(pair=pair, years=2)
+                flash(
+                    f"✅ Model trained on {training_result['train_samples']} samples! "
+                    f"Test accuracy: {training_result['test_accuracy']}%",
+                    'success'
+                )
             
             # Get prediction
             prediction_result = predictor.predict(pair=pair)
             
-            flash(f"Prediction generated for {pair} ({pred_type})", 'success')
+            flash(f"🔮 Prediction generated for {pair} ({pred_type})", 'success')
             
         except Exception as e:
-            flash(f"Error: {str(e)}", 'danger')
+            flash(f"❌ Error: {str(e)}", 'danger')
             return redirect(url_for('predictions.predict'))
     
     return render_template('predictions/predict.html',

@@ -10,7 +10,7 @@ import os
 from datetime import datetime
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score
 from app.ml.data_fetcher import fetch_historical_data
 from app.ml.feature_engineering import engineer_features, get_feature_columns
 
@@ -36,19 +36,19 @@ class ForexPredictor:
         if os.path.exists(model_path):
             self.load_model()
     
-    def train(self, pair: str = 'EURUSD', period: str = '4y') -> dict:
+    def train(self, pair: str = 'EURUSD', years: int = 2) -> dict:
         """
         Train model on historical data.
         
         Args:
             pair: Currency pair to train on
-            period: Historical period to use
+            years: Years of historical data to use (max 2 for reliability)
             
         Returns:
             Dictionary with training metrics
         """
         # Fetch and prepare data
-        df = fetch_historical_data(pair, period)
+        df = fetch_historical_data(pair, years=years)
         df = engineer_features(df)
         
         # Prepare features and target
@@ -83,7 +83,7 @@ class ForexPredictor:
         
         return {
             'pair': pair,
-            'period': period,
+            'years': years,
             'train_accuracy': round(train_accuracy * 100, 2),
             'test_accuracy': round(test_accuracy * 100, 2),
             'train_samples': len(X_train),
@@ -103,13 +103,16 @@ class ForexPredictor:
             Dictionary with prediction results
         """
         if not self.is_trained and not os.path.exists(self.model_path):
-            raise RuntimeError("Model not trained. Call train() first or load a saved model.")
+            raise RuntimeError(
+                "Model not trained. Please train first by checking 'Retrain Model' "
+                "on the predictions page. Note: Yahoo Finance limits forex history to ~2 years."
+            )
         
         if self.model is None:
             self.load_model()
         
-        # Fetch recent data
-        df = fetch_historical_data(pair, period='6mo')  # Need enough data for indicators
+        # Fetch recent data (need enough for indicator calculations)
+        df = fetch_historical_data(pair, years=1)  # 1 year sufficient for indicators
         df = engineer_features(df)
         
         # Get most recent features
