@@ -46,7 +46,10 @@
                     </div>
                     
                     <div class="d-grid">
-                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                        <button type="submit" class="btn btn-primary btn-lg" id="predictBtn">
+                            <span id="predictBtnText">Get Prediction</span>
+                            <span id="predictBtnSpinner" class="spinner-border spinner-border-sm d-none ms-2" role="status"></span>
+                        </button>
                     </div>
                 </form>
                 
@@ -176,4 +179,31 @@
         </div>
     </div>
 </div>
+{% block scripts %}
+<script>
+// Show loading state on form submit
+document.querySelector('form').addEventListener('submit', function() {
+    const btn = document.getElementById('predictBtn');
+    const text = document.getElementById('predictBtnText');
+    const spinner = document.getElementById('predictBtnSpinner');
+    
+    btn.disabled = true;
+    text.textContent = 'Analyzing...';
+    spinner.classList.remove('d-none');
+});
+
+// Optional: Auto-hide alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        if (!alert.classList.contains('alert-danger')) {  // Keep error alerts visible
+            setTimeout(() => {
+                alert.classList.add('fade');
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        }
+    });
+});
+</script>
+{% endblock %}
 {% endblock %}

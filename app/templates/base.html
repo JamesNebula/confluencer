@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Forex Confluence{% endblock %}</title>
-    
+    <title>{% block title %}Confluencer{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
@@ -37,7 +37,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">
-                <i class="fas fa-chart-line"></i> Forex Confluence
+                <i class="fas fa-chart-line"></i> Confluencer
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -114,7 +114,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container text-center">
-            <p class="mb-0">&copy; 2026 Forex Confluence App. All rights reserved.</p>
+            <p class="mb-0">&copy; 2026 Confluencer App. All rights reserved.</p>
         </div>
     </footer>
 
@@ -125,5 +125,25 @@
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     
     {% block scripts %}{% endblock %}
+    <!-- Global loading overlay -->
+<div id="globalLoading" class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-none" style="z-index: 9999;">
+    <div class="position-absolute top-50 start-50 translate-middle text-center">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-white mt-3">Processing your request...</p>
+    </div>
+</div>
+
+<!-- Add script to show loading on long operations -->
+<script>
+// Show global loading for links that might take time
+document.addEventListener('click', function(e) {
+    const target = e.target;
+    if (target.tagName === 'A' && target.href.includes('/predict')) {
+        document.getElementById('globalLoading').classList.remove('d-none');
+    }
+});
+</script>
 </body>
 </html>
