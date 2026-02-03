@@ -12,10 +12,10 @@ psycopg2-binary==2.9.9
 bcrypt==4.1.2
 python-dotenv==1.0.0
 
-# Data & ML (Python 3.11 compatible versions)
-pandas==2.1.4
-numpy==1.26.2
-scikit-learn==1.3.2
+# Data & ML - PRE-BUILT WHEELS FOR PYTHON 3.11
+pandas==2.0.3          # Has pre-built wheels for 3.11
+numpy==1.24.4          # Compatible with pandas 2.0.3
+scikit-learn==1.3.0    # Pre-built wheels
 joblib==1.3.2
 
 # API Data Fetching
