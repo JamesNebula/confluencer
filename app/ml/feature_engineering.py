@@ -109,7 +109,7 @@ def calculate_atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int
 
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Engineer technical indicator features from OHLCV data.
+    technical indicator features from OHLCV data.
     
     Args:
         df: DataFrame with OHLCV columns

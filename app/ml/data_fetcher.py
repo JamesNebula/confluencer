@@ -89,11 +89,6 @@ def fetch_historical_data(pair: str, years: int = 1) -> pd.DataFrame:
     """
     Fetch forex data from Alpha Vantage API.
     
-    FREE TIER LIMITS:
-    - 5 requests per minute
-    - 100 requests per day
-    - Add small delay between requests to avoid rate limits
-    
     Args:
         pair: Currency pair (e.g., 'EURUSD')
         years: Years of history (max 2 recommended)

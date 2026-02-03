@@ -5,7 +5,7 @@ from flask_wtf.csrf import CSRFProtect
 from config import ProductionConfig, get_config
 import os
 
-# Initialize extensions WITHOUT app instance (deferred initialization)
+# Initialize extensions WITHOUT app instance 
 db = SQLAlchemy()
 login_manager = LoginManager()
 csrf = CSRFProtect()

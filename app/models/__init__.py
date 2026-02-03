@@ -149,7 +149,6 @@ class TradeHistory(db.Model):
             float: Pip value in account currency
         """
         # Simplified: Most major pairs have $10 per pip per standard lot
-        # This would be more complex in a real trading system
         return 10.0 * self.position_size
     
     def __repr__(self):
