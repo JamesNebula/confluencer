@@ -62,15 +62,18 @@ class ProductionConfig(Config):
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     
-    def __init__(self):
-        """Initialize production config"""
-        database_url = os.environ.get('DATABASE_URL')
-        if not database_url:
-            raise ValueError('DATABASE_URL must be set in production!')
-        self.SQLALCHEMY_DATABASE_URI = database_url
-        
-        secret_key = os.environ.get('SECRET_KEY')
-        if not secret_key or 'dev-secret' in secret_key:
+    @classmethod
+    def init_app(cls, app):
+        super().init_app(app)
+    
+        # Render provides DATABASE_URL with postgres:// prefix
+        # SQLAlchemy requires postgresql:// prefix
+        database_url = app.config.get('SQLALCHEMY_DATABASE_URI')
+        if database_url and database_url.startswith("postgres://"):
+            app.config['SQLALCHEMY_DATABASE_URI'] = database_url.replace("postgres://", "postgresql://", 1)
+    
+        # Validate required production settings
+        if not app.config.get('SECRET_KEY') or 'dev-secret' in app.config.get('SECRET_KEY', ''):
             raise ValueError('SECRET_KEY must be set and secure in production!')
 
 # Factory function to get config instance

@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: forex-confluence
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn run:app"
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: forex-db
+          property: connectionString
+      - key: ALPHA_VANTAGE_API_KEY
+        sync: false  # You'll set this manually in Render dashboard
+
+databases:
+  - name: forex-db
+    databaseName: forex_app
+    user: forex_user
+    plan: free

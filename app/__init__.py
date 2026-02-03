@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin
 from flask_wtf.csrf import CSRFProtect
-from config import get_config
+from config import ProductionConfig, get_config
 import os
 
 # Initialize extensions WITHOUT app instance (deferred initialization)
@@ -34,11 +34,13 @@ def create_app(config_name='development'):
         print(f"⚠️  Could not create instance folder: {e}")
         raise
     
-    # Get configuration instance with instance path
-    config_obj = get_config(config_name, app.instance_path)
-    
-    # Load configuration from config object
-    app.config.from_object(config_obj)
+    if config_name == 'production':
+    # Production uses DATABASE_URL from environment
+        app.config.from_object(ProductionConfig())
+    else:
+    # Development uses instance folder
+        config_obj = get_config(config_name, app.instance_path)
+        app.config.from_object(config_obj)
     
     # Initialize extensions with app instance
     db.init_app(app)

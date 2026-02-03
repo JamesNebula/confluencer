@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row align-items-center">
+        <div class="col-md-6 mb-4">
+            <h1 class="display-4 fw-bold mb-4">
+                <span class="text-primary">Forex</span> Confluence Analysis
+            </h1>
+            <p class="lead mb-4">
+                Advanced trading analysis combining technical indicators with machine learning predictions.
+            </p>
+            
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border-primary">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-project-diagram text-primary"></i> Confluence Scoring</h5>
+                            <p class="card-text small">Weighted analysis of 5 key technical factors for high-probability setups</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border-success">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-robot text-success"></i> ML Predictions</h5>
+                            <p class="card-text small">Random Forest classifier with 14 technical indicators and real market data</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border-info">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-chart-line text-info"></i> Trade Tracking</h5>
+                            <p class="card-text small">Complete P/L tracking with performance metrics and analytics</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border-warning">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-shield-alt text-warning"></i> Secure & Private</h5>
+                            <p class="card-text small">Bank-grade security with encrypted passwords and private data</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-4 me-md-2">
+                    <i class="fas fa-user-plus"></i> Get Started Free
+                </a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg px-4">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-block p-3 mb-3">
+                            <i class="fas fa-chart-line fa-3x text-primary"></i>
+                        </div>
+                        <h3 class="mb-3">How It Works</h3>
+                    </div>
+                    
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0 me-3 mt-1">
+                            <span class="badge bg-primary rounded-circle" style="width: 28px; height: 28px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center;">1</span>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Sign Up</h6>
+                            <p class="mb-0 text-muted small">Create your free account in seconds</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0 me-3 mt-1">
+                            <span class="badge bg-primary rounded-circle" style="width: 28px; height: 28px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center;">2</span>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Analyze Markets</h6>
+                            <p class="mb-0 text-muted small">Use confluence scoring and ML predictions</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0 me-3 mt-1">
+                            <span class="badge bg-primary rounded-circle" style="width: 28px; height: 28px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center;">3</span>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Track Performance</h6>
+                            <p class="mb-0 text-muted small">Monitor your trades and improve your strategy</p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mb-0">
+                        <strong>💡 Perfect for:</strong> Traders, developers, data scientists, and anyone learning algorithmic trading
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <hr class="my-5">
+    
+    <div class="row text-center mb-5">
+        <div class="col">
+            <h2 class="mb-4">Built with Modern Technology</h2>
+            <div class="row justify-content-center">
+                <div class="col-auto mb-3">
+                    <div class="bg-light p-3 rounded">
+                        <h6 class="mb-0">Python 3.11</h6>
+                    </div>
+                </div>
+                <div class="col-auto mb-3">
+                    <div class="bg-light p-3 rounded">
+                        <h6 class="mb-0">Flask 3.0</h6>
+                    </div>
+                </div>
+                <div class="col-auto mb-3">
+                    <div class="bg-light p-3 rounded">
+                        <h6 class="mb-0">scikit-learn</h6>
+                    </div>
+                </div>
+                <div class="col-auto mb-3">
+                    <div class="bg-light p-3 rounded">
+                        <h6 class="mb-0">Bootstrap 5</h6>
+                    </div>
+                </div>
+                <div class="col-auto mb-3">
+                    <div class="bg-light p-3 rounded">
+                        <h6 class="mb-0">PostgreSQL</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center">
+        <p class="text-muted mb-0">
+            <small>
+                <strong>Disclaimer:</strong> This application is for educational purposes only. 
+                Forex trading involves substantial risk. Past performance does not guarantee future results.
+            </small>
+        </p>
+    </div>
+</div>
+{% endblock %}

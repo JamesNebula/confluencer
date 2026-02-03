@@ -11,7 +11,6 @@ dashboard_bp = Blueprint('dashboard', __name__)
 
 @dashboard_bp.route('/')
 @dashboard_bp.route('/dashboard')
-@login_required
 def index():
     """
     Main dashboard page with trading statistics and recent trades.
@@ -23,68 +22,71 @@ def index():
         - Recent trades (last 10)
         - Quick stats
     """
+    if current_user.is_authenticated:
     # Get user's recent trades (last 10)
-    recent_trades = TradeHistory.query.filter_by(
-        user_id=current_user.id
-    ).order_by(
-        TradeHistory.created_at.desc()
-    ).limit(10).all()
-    
-    # Calculate overall statistics
-    total_trades = TradeHistory.query.filter_by(user_id=current_user.id).count()
-    
-    # Get all closed trades
-    closed_trades = TradeHistory.query.filter_by(
-        user_id=current_user.id,
-        status='CLOSED'
-    ).all()
-    
-    # Calculate win rate
-    if closed_trades:
+        recent_trades = TradeHistory.query.filter_by(
+            user_id=current_user.id
+        ).order_by(
+            TradeHistory.created_at.desc()
+        ).limit(10).all()
+
+        # Calculate overall statistics
+        total_trades = TradeHistory.query.filter_by(user_id=current_user.id).count()
+
+        # Get all closed trades
+        closed_trades = TradeHistory.query.filter_by(
+            user_id=current_user.id,
+            status='CLOSED'
+        ).all()
+
+        # Calculate win rate
+        if closed_trades:
+            winning_trades = [t for t in closed_trades if t.pnl and t.pnl > 0]
+            win_rate = round((len(winning_trades) / len(closed_trades)) * 100, 2)
+        else:
+            win_rate = 0.0
+
+        # Calculate total P/L
+        total_pnl = sum(t.pnl for t in closed_trades if t.pnl) if closed_trades else 0.0
+        total_pnl = round(total_pnl, 2)
+
+        # Calculate P/L as percentage of account
+        if current_user.account_balance and current_user.account_balance > 0:
+            total_pnl_pct = round((total_pnl / current_user.account_balance) * 100, 2)
+        else:
+            total_pnl_pct = 0.0
+
+        # Calculate open trades count
+        open_trades_count = TradeHistory.query.filter_by(
+            user_id=current_user.id,
+            status='OPEN'
+        ).count()
+
+        # Calculate average win and average loss
         winning_trades = [t for t in closed_trades if t.pnl and t.pnl > 0]
-        win_rate = round((len(winning_trades) / len(closed_trades)) * 100, 2)
+        losing_trades = [t for t in closed_trades if t.pnl and t.pnl < 0]
+
+        avg_win = round(sum(t.pnl for t in winning_trades) / len(winning_trades), 2) if winning_trades else 0.0
+        avg_loss = round(sum(t.pnl for t in losing_trades) / len(losing_trades), 2) if losing_trades else 0.0
+
+        # Calculate profit factor (Gross Profit / Gross Loss)
+        gross_profit = sum(t.pnl for t in winning_trades) if winning_trades else 0.0
+        gross_loss = abs(sum(t.pnl for t in losing_trades)) if losing_trades else 1.0  # Avoid division by zero
+        profit_factor = round(gross_profit / gross_loss, 2) if gross_loss > 0 else 0.0
+
+        return render_template('dashboard/index.html',
+                             title='Dashboard',
+                             recent_trades=recent_trades,
+                             total_trades=total_trades,
+                             open_trades_count=open_trades_count,
+                             win_rate=win_rate,
+                             total_pnl=total_pnl,
+                             total_pnl_pct=total_pnl_pct,
+                             avg_win=avg_win,
+                             avg_loss=avg_loss,
+                             profit_factor=profit_factor)
     else:
-        win_rate = 0.0
-    
-    # Calculate total P/L
-    total_pnl = sum(t.pnl for t in closed_trades if t.pnl) if closed_trades else 0.0
-    total_pnl = round(total_pnl, 2)
-    
-    # Calculate P/L as percentage of account
-    if current_user.account_balance and current_user.account_balance > 0:
-        total_pnl_pct = round((total_pnl / current_user.account_balance) * 100, 2)
-    else:
-        total_pnl_pct = 0.0
-    
-    # Calculate open trades count
-    open_trades_count = TradeHistory.query.filter_by(
-        user_id=current_user.id,
-        status='OPEN'
-    ).count()
-    
-    # Calculate average win and average loss
-    winning_trades = [t for t in closed_trades if t.pnl and t.pnl > 0]
-    losing_trades = [t for t in closed_trades if t.pnl and t.pnl < 0]
-    
-    avg_win = round(sum(t.pnl for t in winning_trades) / len(winning_trades), 2) if winning_trades else 0.0
-    avg_loss = round(sum(t.pnl for t in losing_trades) / len(losing_trades), 2) if losing_trades else 0.0
-    
-    # Calculate profit factor (Gross Profit / Gross Loss)
-    gross_profit = sum(t.pnl for t in winning_trades) if winning_trades else 0.0
-    gross_loss = abs(sum(t.pnl for t in losing_trades)) if losing_trades else 1.0  # Avoid division by zero
-    profit_factor = round(gross_profit / gross_loss, 2) if gross_loss > 0 else 0.0
-    
-    return render_template('dashboard/index.html',
-                         title='Dashboard',
-                         recent_trades=recent_trades,
-                         total_trades=total_trades,
-                         open_trades_count=open_trades_count,
-                         win_rate=win_rate,
-                         total_pnl=total_pnl,
-                         total_pnl_pct=total_pnl_pct,
-                         avg_win=avg_win,
-                         avg_loss=avg_loss,
-                         profit_factor=profit_factor)
+        return render_template('public/landing.html', title='Confluencer')
 
 
 @dashboard_bp.route('/trade-history')
