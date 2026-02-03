@@ -48,7 +48,7 @@ def create_app(config_name='development'):
     csrf.init_app(app)
     
     # Configure Flask-Login
-    login_manager.login_view = 'auth.login'  # Where to redirect if login required
+    login_manager.login_view = 'auth.login'  # type: ignore # Where to redirect if login required
     login_manager.login_message = 'Please log in to access this page.'
     login_manager.login_message_category = 'info'  # Bootstrap alert class
     
