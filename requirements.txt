@@ -24,3 +24,6 @@ yfinance==0.2.27
 
 # Deployment
 gunicorn==21.2.0
+
+# Validation
+email-validator==2.3.0
