@@ -56,25 +56,12 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     """
     Production configuration with security hardening.
+    Database URI is set explicitly in app/__init__.py from DATABASE_URL.
     """
     DEBUG = False
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-    
-    @classmethod
-    def init_app(cls, app):
-        super().init_app(app)
-    
-        # Render provides DATABASE_URL with postgres:// prefix
-        # SQLAlchemy requires postgresql:// prefix
-        database_url = app.config.get('SQLALCHEMY_DATABASE_URI')
-        if database_url and database_url.startswith("postgres://"):
-            app.config['SQLALCHEMY_DATABASE_URI'] = database_url.replace("postgres://", "postgresql://", 1)
-    
-        # Validate required production settings
-        if not app.config.get('SECRET_KEY') or 'dev-secret' in app.config.get('SECRET_KEY', ''):
-            raise ValueError('SECRET_KEY must be set and secure in production!')
 
 # Factory function to get config instance
 def get_config(config_name='development', instance_path=None):

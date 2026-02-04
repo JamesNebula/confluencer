@@ -35,10 +35,23 @@ def create_app(config_name='development'):
         raise
     
     if config_name == 'production':
-    # Production uses DATABASE_URL from environment
-        app.config.from_object(ProductionConfig())
+    # Load base production config
+        from config import ProductionConfig
+        app.config.from_object(ProductionConfig)
+    
+        # CRITICAL FIX: Explicitly set database URI from Render's DATABASE_URL
+        database_url = os.environ.get('DATABASE_URL')
+        if not database_url:
+            raise RuntimeError('❌ DATABASE_URL not set! Check Render PostgreSQL addon.')
+    
+        # Convert postgres:// to postgresql:// for SQLAlchemy compatibility
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+        print(f"✅ Production database URI set: {database_url[:60]}...")
     else:
-    # Development uses instance folder
+    # Development: Use DevelopmentConfig with instance path
         config_obj = get_config(config_name, app.instance_path)
         app.config.from_object(config_obj)
     
